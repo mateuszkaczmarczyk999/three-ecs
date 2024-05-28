@@ -1,0 +1,16 @@
+{
+  "light": {
+    "color": 16777215,
+    "intensity": 1,
+    "positionX": 5,
+    "positionY": 10,
+    "positionZ": 7.5
+  },
+  "material": { "color": 65280, "metalness": 0.5, "roughness": 0.5 },
+  "camera": {
+    "fov": 75,
+    "positionX": 0,
+    "positionY": 3.061616997868383e-16,
+    "positionZ": 5
+  }
+}
