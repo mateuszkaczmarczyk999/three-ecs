@@ -1,0 +1,77 @@
+import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { setupGUI } from './gui';
+
+// Create the scene
+const scene = new THREE.Scene();
+
+// Create a camera
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+camera.position.z = 5;
+
+// Create the renderer and attach it to the CANVAS div
+const renderer = new THREE.WebGLRenderer();
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = true; // Enable shadow mapping
+const canvasDiv = document.getElementById('CANVAS');
+if (canvasDiv) {
+  canvasDiv.appendChild(renderer.domElement);
+}
+
+// Create a cube with MeshStandardMaterial
+const geometry = new THREE.BoxGeometry();
+const material = new THREE.MeshStandardMaterial({ color: 0x00ff00, metalness: 0.5, roughness: 0.5 });
+const cube = new THREE.Mesh(geometry, material);
+cube.castShadow = true; // Enable casting shadows
+scene.add(cube);
+
+// Create a plane as ground
+const planeGeometry = new THREE.PlaneGeometry(10, 10);
+const planeMaterial = new THREE.MeshStandardMaterial({ color: 0x808080 });
+const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+plane.rotation.x = -Math.PI / 2;
+plane.position.y = -1;
+plane.receiveShadow = true; // Enable receiving shadows
+scene.add(plane);
+
+// Add a directional light for shadows
+const light = new THREE.DirectionalLight(0xffffff, 1);
+light.position.set(5, 10, 7.5);
+light.castShadow = true; // Enable casting shadows
+light.shadow.camera.near = 0.1;
+light.shadow.camera.far = 25;
+scene.add(light);
+
+// Add ambient light for better lighting
+const ambientLight = new THREE.AmbientLight(0x404040); // soft white light
+scene.add(ambientLight);
+
+// Add orbit controls
+const controls = new OrbitControls(camera, renderer.domElement);
+
+// Setup GUI
+setupGUI(light, material, camera);
+
+// Animation loop
+const animate = () => {
+  requestAnimationFrame(animate);
+
+  // Rotate the cube around the Y axis
+  cube.rotation.y += 0.01;
+
+  // Update the controls
+  controls.update();
+
+  // Render the scene
+  renderer.render(scene, camera);
+};
+
+// Handle window resize
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// Start the animation loop
+animate();
