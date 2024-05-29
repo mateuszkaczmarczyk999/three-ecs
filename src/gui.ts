@@ -1,5 +1,9 @@
 import { Pane } from "tweakpane";
-import * as THREE from "three";
+import {
+  DirectionalLight,
+  MeshStandardMaterial,
+  PerspectiveCamera,
+} from "three";
 
 interface GUIParams {
   light: {
@@ -38,9 +42,9 @@ async function loadJSON(url: string): Promise<any> {
 }
 
 export function setupGUI(
-  light: THREE.DirectionalLight,
-  material: THREE.MeshStandardMaterial,
-  camera: THREE.PerspectiveCamera,
+  light: DirectionalLight,
+  material: MeshStandardMaterial,
+  camera: PerspectiveCamera,
   params: GUIParams
 ) {
   const pane = new Pane();
