@@ -11,6 +11,16 @@ import {
 } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { setupGUI, loadConfig, GUIParams } from "./gui";
+import { Entity } from "./domains/core/Entity";
+import { TransformComponent } from "./domains/drawing/components/Transform";
+import { GeometryComponent, GeometryDefinition } from "./domains/drawing/components/Geometry";
+import { MaterialComponent, MaterialDefinition } from "./domains/drawing/components/Material";
+import { RenderableComponent } from "./domains/drawing/components/Renderable";
+import { SpatialSystem } from "./domains/drawing/systems/Spatial";
+import { AssetSystem } from "./domains/drawing/systems/Asset";
+import { LevelSystem } from "./domains/drawing/systems/Level";
+import { TweenSystem } from "./domains/drawing/systems/Tween";
+import { MotionComponent } from "./domains/drawing/components/Motion";
 
 
 const createRenderer = () => {
@@ -55,6 +65,30 @@ const creatPlaneMesh = () => {
 // Create the scene
 const scene = new Scene();
 
+const cubeEntity = new Entity();
+
+const transformComponent = new TransformComponent();
+const geometryComponent = new GeometryComponent();
+const materialComponent = new MaterialComponent();
+const renderableComponent = new RenderableComponent<Mesh>();
+const motionComponent = new MotionComponent();
+motionComponent.rotationIncrement = { x: 0.01, y: 0.01, z: 0.01 };
+
+cubeEntity.addComponents(transformComponent, geometryComponent, materialComponent, renderableComponent, motionComponent);
+
+const spatialSystem = new SpatialSystem();
+spatialSystem.addEntity(cubeEntity);
+
+const assetSystem = new AssetSystem();
+assetSystem.addEntity(cubeEntity);
+
+const levelSystem = new LevelSystem();
+levelSystem.addEntity(cubeEntity);
+
+const tweenSystem = new TweenSystem();
+tweenSystem.addEntity(cubeEntity);
+
+
 async function init() {
   const params = await loadConfig();
 
@@ -69,12 +103,15 @@ async function init() {
   // Create the renderer and attach it to the CANVAS div
   const renderer = createRenderer();
 
-  // Create a cube with MeshStandardMaterial
-  const geometry = new BoxGeometry();
-  const material = createCubeMaterial(params);
-  const cube = new Mesh(geometry, material);
-  cube.castShadow = true; // Enable casting shadows
-  scene.add(cube);
+  // // Create a cube with MeshStandardMaterial
+  // const geometry = new BoxGeometry();
+  // const material = createCubeMaterial(params);
+  // const cube = new Mesh(geometry, material);
+  // cube.castShadow = true; // Enable casting shadows
+  // scene.add(cube);
+
+  assetSystem.update();
+  levelSystem.update(scene);
 
   // Create a plane as ground
   const plane = creatPlaneMesh();
@@ -100,19 +137,17 @@ async function init() {
   const controls = new OrbitControls(camera, renderer.domElement);
 
   // Setup GUI
-  setupGUI(light, material, camera, params);
+  // setupGUI(light, material, camera, params);
 
   // Animation loop
   const animate = () => {
     requestAnimationFrame(animate);
 
-    // Rotate the cube around the Y axis
-    cube.rotation.y += 0.01;
+    tweenSystem.update();
+    spatialSystem.update();
 
-    // Update the controls
     controls.update();
 
-    // Render the scene
     renderer.render(scene, camera);
   };
 

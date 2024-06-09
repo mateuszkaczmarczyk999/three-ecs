@@ -4,8 +4,9 @@ import { Entity } from "../../core/Entity";
 import { RenderableComponent } from "../components/Renderable";
 import { Mesh } from "three";
 import { TransformComponent } from "../components/Transform";
+import { MotionComponent } from "../components/Motion";
 
-export class SpatialSystem extends System {
+export class TweenSystem extends System {
   constructor() {
     super();
   }
@@ -19,30 +20,19 @@ export class SpatialSystem extends System {
       const transform = entity.getComponent<TransformComponent>(
         ComponentType.Transform
       );
-      const renderable = entity.getComponent<RenderableComponent<Mesh>>(
-        ComponentType.Renderable
-      );
+      const motion = entity.getComponent<MotionComponent>(ComponentType.Motion);
 
-      if (!renderable.object3D)
-        throw new Error("No object3D found in RenderableComponent");
+      transform.position.x += motion.positionIncrement.x;
+      transform.position.y += motion.positionIncrement.y;
+      transform.position.z += motion.positionIncrement.z;
 
-      renderable.object3D.position.set(
-        transform.position.x,
-        transform.position.y,
-        transform.position.z
-      );
-      renderable.object3D.rotation.set(
-        transform.rotation.x,
-        transform.rotation.y,
-        transform.rotation.z
-      );
+      transform.rotation.x += motion.rotationIncrement.x;
+      transform.rotation.y += motion.rotationIncrement.y;
+      transform.rotation.z += motion.rotationIncrement.z;
     });
   }
 
   public appliesTo(entity: Entity): boolean {
-    return entity.hasComponents(
-      ComponentType.Transform,
-      ComponentType.Renderable
-    );
+    return entity.hasComponents(ComponentType.Transform, ComponentType.Motion);
   }
 }
