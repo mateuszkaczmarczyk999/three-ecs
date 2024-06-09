@@ -5,7 +5,7 @@ import {
   PerspectiveCamera,
 } from "three";
 
-interface GUIParams {
+export interface GUIParams {
   light: {
     color: number;
     intensity: number;

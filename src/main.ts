@@ -10,7 +10,47 @@ import {
   Scene,
 } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import { setupGUI, loadConfig } from "./gui";
+import { setupGUI, loadConfig, GUIParams } from "./gui";
+
+
+const createRenderer = () => {
+  const renderer = new WebGLRenderer();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.shadowMap.enabled = true; // Enable shadow mapping
+  const canvasDiv = document.getElementById("CANVAS");
+  if (canvasDiv) {
+    canvasDiv.appendChild(renderer.domElement);
+  }
+  return renderer;
+};
+
+const createCamera = () => {
+  const camera = new PerspectiveCamera(
+    75,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    1000
+  );
+  return camera;
+};
+
+const createCubeMaterial = (params: GUIParams) => {
+  return new MeshStandardMaterial({
+    color: params.material.color,
+    metalness: params.material.metalness,
+    roughness: params.material.roughness,
+  });
+}
+
+const creatPlaneMesh = () => {
+  const planeGeometry = new PlaneGeometry(10, 10);
+  const planeMaterial = new MeshStandardMaterial({ color: 0x808080 });
+  const plane = new Mesh(planeGeometry, planeMaterial);
+  plane.rotation.x = -Math.PI / 2;
+  plane.position.y = -1;
+  plane.receiveShadow = true; // Enable receiving shadows
+  return plane;
+};
 
 // Create the scene
 const scene = new Scene();
@@ -19,12 +59,7 @@ async function init() {
   const params = await loadConfig();
 
   // Create a camera
-  const camera = new PerspectiveCamera(
-    params.camera.fov,
-    window.innerWidth / window.innerHeight,
-    0.1,
-    1000
-  );
+  const camera = createCamera();
   camera.position.set(
     params.camera.positionX,
     params.camera.positionY,
@@ -32,32 +67,17 @@ async function init() {
   );
 
   // Create the renderer and attach it to the CANVAS div
-  const renderer = new WebGLRenderer();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.shadowMap.enabled = true; // Enable shadow mapping
-  const canvasDiv = document.getElementById("CANVAS");
-  if (canvasDiv) {
-    canvasDiv.appendChild(renderer.domElement);
-  }
+  const renderer = createRenderer();
 
   // Create a cube with MeshStandardMaterial
   const geometry = new BoxGeometry();
-  const material = new MeshStandardMaterial({
-    color: params.material.color,
-    metalness: params.material.metalness,
-    roughness: params.material.roughness,
-  });
+  const material = createCubeMaterial(params);
   const cube = new Mesh(geometry, material);
   cube.castShadow = true; // Enable casting shadows
   scene.add(cube);
 
   // Create a plane as ground
-  const planeGeometry = new PlaneGeometry(10, 10);
-  const planeMaterial = new MeshStandardMaterial({ color: 0x808080 });
-  const plane = new Mesh(planeGeometry, planeMaterial);
-  plane.rotation.x = -Math.PI / 2;
-  plane.position.y = -1;
-  plane.receiveShadow = true; // Enable receiving shadows
+  const plane = creatPlaneMesh();
   scene.add(plane);
 
   // Add a directional light for shadows
