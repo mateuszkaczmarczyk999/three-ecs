@@ -3,8 +3,10 @@ export abstract class Component {
 }
 
 export enum ComponentType {
-  Geometry = "Geometry",
-  Material = "Material",
+  Asset = "Asset",
+  Camera = "Camera",
+  Light = "Light",
+  View = "View",
   Renderable = "Renderable",
   Transform = "Transform",
   Intersect = "Intersect",
