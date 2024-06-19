@@ -43,20 +43,22 @@ function getUv( faceDirVector: Vector3, normal: Vector3, uvAxis: 'x' | 'y' | 'z'
 
 }
 
-class RoundedBoxGeometry extends BoxGeometry {
+class MyRoundedBoxGeometry extends BoxGeometry {
 
-	constructor( width = 1, height = 1, depth = 1, givenSegments = 2, radius = 0.1, scene: Scene ) {
+	constructor( width = 1, height = 1, depth = 1, givenYSegments = 2, radiusY = 0.1, givenXZSegments = 2, radiusXZ = 0.1, scene: Scene ) {
 
 		// ensure segments is odd so we have a plane connecting the rounded corners
-		const segments = givenSegments * 2 + 1;
+		const segmentsY = givenYSegments * 2 + 1;
+        const segmentsXZ = givenXZSegments * 2 + 1;
 
 		// ensure radius isn't bigger than shortest side
-		radius = Math.min( width / 2, height / 2, depth / 2, radius );
+		radiusY = Math.min( width / 2, height / 2, depth / 2, radiusY );
+        radiusXZ = Math.min( width / 2, height / 2, depth / 2, radiusXZ );
 
-		super( 1, 1, 1, segments, segments, 1 );
+		super( 1, 1, 1, segmentsY, segmentsXZ, 1 );
 
 		// if we just have one segment we're the same as a regular box
-		if ( segments === 1 ) return;
+		if ( segmentsY === 1 || segmentsXZ === 1) return;
 
 		const geometry2 = this.toNonIndexed();
 
@@ -69,19 +71,22 @@ class RoundedBoxGeometry extends BoxGeometry {
 		const normal = new Vector3();
         const boxNormal = new Vector3();
 
-		const box = new Vector3( width/2 - radius, height/2, depth/2 - radius )
-
 		const positions = this.attributes.position.array;
 		const normals = this.attributes.normal.array;
 		const uvs = this.attributes.uv.array;
 
 		// const faceTris = positions.length / 6;
 		// const faceDirVector = new Vector3();
-		const halfSegmentSize = 0.5 / segments;
-        const segmentSize = 1 / segments;
-        const arcSegmentSize = radius / givenSegments;
-        const arcSegmentCount = givenSegments;
-        const arcSegmentAngle = Math.PI / 2 / arcSegmentCount;
+        const segmentYSize = 1 / segmentsY;
+        const segmentXZSize = 1 / segmentsXZ;
+
+        // const arcXZSegmentSize = radiusXZ / givenSegments;
+        // const arcYSegmentSize = radiusY / givenSegments;
+        const arcSegmentYCount = givenYSegments;
+        const arcSegmentYAngle = Math.PI / 2 / arcSegmentYCount;
+
+        const arcSegmentXZCount = givenXZSegments;
+        const arcSegmentXZAngle = Math.PI / 2 / arcSegmentXZCount;
 
         const pointGeometry = new SphereGeometry(0.01);
 
@@ -97,14 +102,14 @@ class RoundedBoxGeometry extends BoxGeometry {
 
             // console.log('arcSegmentCount', arcSegmentCount, "segments", segments);
 
-            const orderX = arcSegmentCount - Math.floor(Math.abs(normal.x) / segmentSize);
-            const orderZ = arcSegmentCount - Math.floor(Math.abs(normal.z) / segmentSize);
+            const orderX = arcSegmentYCount - Math.floor(Math.abs(normal.x) / segmentYSize);
+            const orderZ = arcSegmentYCount - Math.floor(Math.abs(normal.z) / segmentYSize);
 
-            const offsetFromAngleX = Math.cos(orderX * arcSegmentAngle);
-            const offsetFromAngleZ = Math.sin(orderX * arcSegmentAngle);
+            const offsetFromAngleX = Math.cos(orderX * arcSegmentYAngle);
+            const offsetFromAngleZ = Math.sin(orderX * arcSegmentYAngle);
 
-            const offsetInX = (1-offsetFromAngleX) * radius;
-            const offsetInZ = offsetFromAngleZ * radius - radius;
+            const offsetInX = (1-offsetFromAngleX) * radiusY;
+            const offsetInZ = offsetFromAngleZ * radiusY - radiusY;
 
 
             if (Math.sign( normal.x ) === 1 && orderZ === 0) {
@@ -119,19 +124,19 @@ class RoundedBoxGeometry extends BoxGeometry {
             }
 
 
-            const orderY = arcSegmentCount - Math.floor(Math.abs(normal.y) / segmentSize);
-            const offsetFromAngleY = Math.cos(orderY * arcSegmentAngle);
-            const innerOffset = Math.cos((arcSegmentCount - orderY) * arcSegmentAngle) * radius/2 - radius/2;
+            const orderY = arcSegmentXZCount - Math.floor(Math.abs(normal.y) / segmentXZSize);
+            const offsetFromAngleY = Math.cos(orderY * arcSegmentXZAngle);
+            const innerOffset = Math.cos((arcSegmentXZCount - orderY) * arcSegmentXZAngle) * radiusXZ/2 - radiusXZ/2;
 
             if (Math.sign( normal.y ) === 1) {
-                normal.y = height/2 - (1-offsetFromAngleY) * radius;
+                normal.y = height/2 - (1-offsetFromAngleY) * radiusXZ;
 
                 normal.x += Math.sign( normal.x ) * innerOffset;
                 normal.z += Math.sign( normal.z ) * innerOffset;
 
             }
             if (Math.sign( normal.y ) === -1) {
-                normal.y = -height/2 + (1-offsetFromAngleY) * radius;
+                normal.y = -height/2 + (1-offsetFromAngleY) * radiusXZ;
 
                 normal.x += Math.sign( normal.x ) * innerOffset;
                 normal.z += Math.sign( normal.z ) * innerOffset;
@@ -218,4 +223,4 @@ class RoundedBoxGeometry extends BoxGeometry {
 
 }
 
-export { RoundedBoxGeometry };
+export { MyRoundedBoxGeometry };
