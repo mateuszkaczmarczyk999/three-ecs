@@ -11,7 +11,7 @@ import {
 } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { setupGUI, loadConfig, GUIParams } from "./gui";
-import { RoundedBoxGeometry } from "./test/RoundedBox";
+import { RoundedBoxGeometry } from "./test/MyRoundedBox";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader'
 
@@ -106,7 +106,7 @@ async function init() {
   const renderer = createRenderer();
 
   // Create a cube with MeshStandardMaterial
-  const geometry = new RoundedBoxGeometry(1, 1, 1, 2, 0.1, scene);
+  const geometry = new RoundedBoxGeometry(1, 1, 1, 7, 0.1, scene);
   const material = createCubeMaterial(params);
   const cube = new Mesh(geometry, material);
   cube.castShadow = true; // Enable casting shadows

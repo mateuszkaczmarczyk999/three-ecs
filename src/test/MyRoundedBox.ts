@@ -53,7 +53,7 @@ class RoundedBoxGeometry extends BoxGeometry {
 		// ensure radius isn't bigger than shortest side
 		radius = Math.min( width / 2, height / 2, depth / 2, radius );
 
-		super( 1, 1, 1, segments, segments, segments );
+		super( 1, 1, 1, segments, segments, 1 );
 
 		// if we just have one segment we're the same as a regular box
 		if ( segments === 1 ) return;
@@ -81,12 +81,7 @@ class RoundedBoxGeometry extends BoxGeometry {
         const segmentSize = 1 / segments;
         const arcSegmentSize = radius / givenSegments;
         const arcSegmentCount = givenSegments;
-
-        console.log('segments', segments);
-        console.log('halfSegmentSize', halfSegmentSize);
-        console.log('segmentSize', segmentSize);
-        console.log('arcSegmentSize', arcSegmentSize);
-        console.log('arcSegmentCount', arcSegmentCount);
+        const arcSegmentAngle = Math.PI / 2 / arcSegmentCount;
 
         const pointGeometry = new SphereGeometry(0.01);
 
@@ -100,96 +95,68 @@ class RoundedBoxGeometry extends BoxGeometry {
 
         	normal.copy( position );
 
+            // console.log('arcSegmentCount', arcSegmentCount, "segments", segments);
+
             const orderX = arcSegmentCount - Math.floor(Math.abs(normal.x) / segmentSize);
             const orderZ = arcSegmentCount - Math.floor(Math.abs(normal.z) / segmentSize);
-            const orderY = arcSegmentCount - Math.floor(Math.abs(normal.y) / segmentSize);
+
+            const offsetFromAngleX = Math.cos(orderX * arcSegmentAngle);
+            const offsetFromAngleZ = Math.sin(orderX * arcSegmentAngle);
+
+            const offsetInX = (1-offsetFromAngleX) * radius;
+            const offsetInZ = offsetFromAngleZ * radius - radius;
+
 
             if (Math.sign( normal.x ) === 1 && orderZ === 0) {
-                normal.x = width/2 - (orderX * arcSegmentSize);
+                normal.x = width/2 - offsetInX;
+                if (Math.sign( normal.z ) === 1) normal.z = depth/2 + offsetInZ;
+                if (Math.sign( normal.z ) === -1) normal.z = -depth/2 - offsetInZ;
             }
             if (Math.sign( normal.x ) === -1 && orderZ === 0) {
-                normal.x = -width/2 + (orderX * arcSegmentSize);
+                normal.x = -width/2 + offsetInX;
+                if (Math.sign( normal.z ) === 1) normal.z = depth/2 + offsetInZ;
+                if (Math.sign( normal.z ) === -1) normal.z = -depth/2 - offsetInZ;
             }
-            if (Math.sign( normal.z ) === 1 && orderX === 0) {
-                normal.z = depth/2 - (orderZ * arcSegmentSize);
+
+
+            const orderY = arcSegmentCount - Math.floor(Math.abs(normal.y) / segmentSize);
+            const offsetFromAngleY = Math.cos(orderY * arcSegmentAngle);
+            const innerOffset = Math.cos((arcSegmentCount - orderY) * arcSegmentAngle) * radius/2 - radius/2;
+
+            if (Math.sign( normal.y ) === 1) {
+                normal.y = height/2 - (1-offsetFromAngleY) * radius;
+
+                normal.x += Math.sign( normal.x ) * innerOffset;
+                normal.z += Math.sign( normal.z ) * innerOffset;
+
             }
-            if (Math.sign( normal.z ) === -1 && orderX === 0) {
-                normal.z = -depth/2 + (orderZ * arcSegmentSize);
+            if (Math.sign( normal.y ) === -1) {
+                normal.y = -height/2 + (1-offsetFromAngleY) * radius;
+
+                normal.x += Math.sign( normal.x ) * innerOffset;
+                normal.z += Math.sign( normal.z ) * innerOffset;
             }
-            normal.y = 0;
-
-
-            // if (boxNormal.y === 0) {
-            //     // normal.x -= Math.sign( normal.x ) * halfSegmentSize;
-            //     // normal.y = 0;
-            //     // normal.z -= Math.sign( normal.z ) * halfSegmentSize;
-
-            // } else {
-            //     // normal.x -= Math.sign( normal.x ) * halfSegmentSize;
-            //     // normal.y -= Math.sign( normal.y ) * halfSegmentSize;
-            //     // normal.z -= Math.sign( normal.z ) * halfSegmentSize;
-            //     // normal.y = 1;
-            // }
-
-
-
-            const mesh1 = new Mesh(pointGeometry, new MeshStandardMaterial({ color: 0x00ffff }));
-            mesh1.position.set(normal.x, normal.y, normal.z);
-            scene.add(mesh1);
 
             // normal.normalize();
 
-            const mesh2 = new Mesh(pointGeometry, new MeshStandardMaterial({ color: 0x0000ff }));
-            mesh2.position.set(normal.x * radius, normal.y * radius, normal.z * radius);
-            scene.add(mesh2);
+            // const mesh1 = new Mesh(pointGeometry, new MeshStandardMaterial({ color: 0x00ffff }));
+            // mesh1.position.set(normal.x, normal.y, normal.z);
+            // scene.add(mesh1);
+
+            // const mesh2 = new Mesh(pointGeometry, new MeshStandardMaterial({ color: 0x0000ff }));
+            // mesh2.position.set(normal.x * radius, normal.y * radius, normal.z * radius);
+            // scene.add(mesh2);
 
 			positions[ i + 0 ] = normal.x;
-			// positions[ i + 1 ] = normal.y;
+			positions[ i + 1 ] = normal.y;
 			positions[ i + 2 ] = normal.z;
 
-            // if (boxNormal.y === 0) {
-            //     positions[ i + 0 ] = box.x * Math.sign( position.x ) + normal.x * radius;
-            //     positions[ i + 1 ] = box.y * Math.sign( position.y ) + normal.y * radius;
-            //     positions[ i + 2 ] = box.z * Math.sign( position.z ) + normal.z * radius;
-            // } else {
-            //     // normal.x = 0;
-            //     // normal.y = Math.sign( normal.y ) * halfSegmentSize;
-            //     // normal.z = 0;
-            // }
+            this.computeVertexNormals();
 
-            const mesh5 = new Mesh(pointGeometry, new MeshStandardMaterial({ color: 0xff00ff }));
-            mesh5.position.set(positions[ i + 0 ], positions[ i + 1 ], positions[ i + 2 ]);
-            scene.add(mesh5);
-
-            // if (boxNormal.y === 0) {
-            //     normals[ i + 0 ] = normal.x;
-            //     normals[ i + 1 ] = normal.y;
-            //     normals[ i + 2 ] = normal.z;
-            // } else {
-            //     normals[ i + 0 ] = normal.x;
-            //     normals[ i + 1 ] = normal.y;
-            //     normals[ i + 2 ] = normal.z;
-            // }
-
-            // console.log('normals', normals[ i + 0 ], normals[ i + 1 ], normals[ i + 2 ]);
+            // const mesh5 = new Mesh(pointGeometry, new MeshStandardMaterial({ color: 0xff00ff }));
+            // mesh5.position.set(positions[ i + 0 ], positions[ i + 1 ], positions[ i + 2 ]);
+            // scene.add(mesh5);
         }
-
-		// for ( let i = 0, j = 0; i < positions.length; i += 3, j += 2 ) {
-
-		// 	position.fromArray( positions, i );
-		// 	normal.copy( position );
-		// 	normal.x -= Math.sign( normal.x ) * halfSegmentSize;
-		// 	normal.y -= Math.sign( normal.y ) * halfSegmentSize;
-		// 	normal.z -= Math.sign( normal.z ) * halfSegmentSize;
-		// 	normal.normalize();
-
-		// 	positions[ i + 0 ] = box.x * Math.sign( position.x ) + normal.x * radius;
-		// 	positions[ i + 1 ] = box.y * Math.sign( position.y ) + normal.y * radius;
-		// 	positions[ i + 2 ] = box.z * Math.sign( position.z ) + normal.z * radius;
-
-		// 	normals[ i + 0 ] = normal.x;
-		// 	normals[ i + 1 ] = normal.y;
-		// 	normals[ i + 2 ] = normal.z;
 
 		// 	const side = Math.floor( i / faceTris );
 
