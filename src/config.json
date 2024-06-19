@@ -6,7 +6,7 @@
     "positionY": 10,
     "positionZ": 7.5
   },
-  "material": { "color": 16714240, "metalness": 0.5, "roughness": 0.5 },
+  "material": { "color": 16714240, "metalness": 0.5, "roughness": 0.5, "opacity": 0.8, "wireframe": false },
   "camera": {
     "fov": 75,
     "positionX": 0,

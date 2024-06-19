@@ -40,6 +40,9 @@ const createCubeMaterial = (params: GUIParams) => {
     color: params.material.color,
     metalness: params.material.metalness,
     roughness: params.material.roughness,
+    opacity: params.material.opacity,
+    transparent: true,
+    wireframe: params.material.wireframe,
   });
 }
 

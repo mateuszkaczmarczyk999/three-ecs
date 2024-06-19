@@ -17,6 +17,8 @@ export interface GUIParams {
     color: number;
     metalness: number;
     roughness: number;
+    opacity: number;
+    wireframe: boolean;
   };
   camera: {
     fov: number;
@@ -91,6 +93,16 @@ export function setupGUI(
     .addBinding(params.material, "roughness", { min: 0, max: 1 })
     .on("change", (ev) => {
       material.roughness = ev.value as number;
+    });
+  materialFolder
+    .addBinding(params.material, "opacity", { min: 0, max: 1 })
+    .on("change", (ev) => {
+      material.opacity = ev.value as number;
+    });
+  materialFolder
+    .addBinding(params.material, "wireframe", { view: "text" })
+    .on("change", (ev) => {
+      material.wireframe = ev.value as boolean;
     });
 
   const cameraFolder = pane.addFolder({ title: "Camera" });
