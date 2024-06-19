@@ -12,7 +12,32 @@ import {
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { setupGUI, loadConfig, GUIParams } from "./gui";
 import { RoundedBoxGeometry } from "./test/RoundedBox";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader'
 
+export const _gltfLoader = new GLTFLoader();
+export const _fbxLoader = new FBXLoader();
+
+const loader = {
+  glb: _gltfLoader,
+  fbx: _fbxLoader,
+};
+
+export const fetch = (scene: Scene, format: 'glb' | 'fbx'): Promise<void> => {
+  return new Promise((resolve) => {
+    loader[format].load(`test.${format}`, (data: any) => {
+      if (data.scene) {
+        data.scene.position.set(0, 2, 0);
+        scene.add(data.scene);
+      }
+      else {
+        data.position.set(0, 3, 0);
+        scene.add(data);
+      }
+      resolve();
+    });
+  });
+};
 
 const createRenderer = () => {
   const renderer = new WebGLRenderer();
@@ -61,6 +86,13 @@ const scene = new Scene();
 
 async function init() {
   const params = await loadConfig();
+  fetch(scene, 'fbx').then(() => {
+    console.log("Loaded fbx", scene);
+  });
+
+  fetch(scene, 'glb').then(() => {
+    console.log("Loaded glb", scene);
+  });
 
   // Create a camera
   const camera = createCamera();
