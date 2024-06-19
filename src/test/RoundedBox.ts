@@ -1,5 +1,9 @@
 import {
 	BoxGeometry,
+	Mesh,
+	MeshStandardMaterial,
+	Scene,
+	SphereGeometry,
 	Vector3
 } from 'three';
 
@@ -40,7 +44,7 @@ function getUv( faceDirVector: Vector3, normal: Vector3, uvAxis: 'x' | 'y' | 'z'
 
 class RoundedBoxGeometry extends BoxGeometry {
 
-	constructor( width = 1, height = 1, depth = 1, segments = 2, radius = 0.1 ) {
+	constructor( width = 1, height = 1, depth = 1, segments = 2, radius = 0.1, scene: Scene ) {
 
 		// ensure segments is odd so we have a plane connecting the rounded corners
 		segments = segments * 2 + 1;
@@ -75,18 +79,43 @@ class RoundedBoxGeometry extends BoxGeometry {
 		const faceDirVector = new Vector3();
 		const halfSegmentSize = 0.5 / segments;
 
+        const pointGeometry = new SphereGeometry(0.02);
+
 		for ( let i = 0, j = 0; i < positions.length; i += 3, j += 2 ) {
 
 			position.fromArray( positions, i );
+
+            const mesh1 = new Mesh(pointGeometry, new MeshStandardMaterial({ color: 0xffffff }));
+            mesh1.position.set(position.x, position.y, position.z);
+            scene.add(mesh1);
+
 			normal.copy( position );
+
 			normal.x -= Math.sign( normal.x ) * halfSegmentSize;
 			normal.y -= Math.sign( normal.y ) * halfSegmentSize;
 			normal.z -= Math.sign( normal.z ) * halfSegmentSize;
-			normal.normalize();
+
+            const mesh2 = new Mesh(pointGeometry, new MeshStandardMaterial({ color: 0x00ffff }));
+            mesh2.position.set(normal.x, normal.y, normal.z);
+            scene.add(mesh2);
+
+            normal.normalize();
+
+            const mesh3 = new Mesh(pointGeometry, new MeshStandardMaterial({ color: 0x0000ff }));
+            mesh3.position.set(normal.x * radius, normal.y * radius, normal.z * radius);
+            scene.add(mesh3);
+
+            const mesh4 = new Mesh(pointGeometry, new MeshStandardMaterial({ color: 0xff0000 }));
+            mesh4.position.set(box.x * Math.sign( position.x ), box.y * Math.sign( position.y ), box.z * Math.sign( position.z ));
+            scene.add(mesh4);
 
 			positions[ i + 0 ] = box.x * Math.sign( position.x ) + normal.x * radius;
 			positions[ i + 1 ] = box.y * Math.sign( position.y ) + normal.y * radius;
 			positions[ i + 2 ] = box.z * Math.sign( position.z ) + normal.z * radius;
+
+            const mesh5 = new Mesh(pointGeometry, new MeshStandardMaterial({ color: 0xff00ff }));
+            mesh5.position.set(positions[ i + 0 ], positions[ i + 1 ], positions[ i + 2 ]);
+            scene.add(mesh5);
 
 			normals[ i + 0 ] = normal.x;
 			normals[ i + 1 ] = normal.y;

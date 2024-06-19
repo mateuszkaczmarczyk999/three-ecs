@@ -106,7 +106,7 @@ async function init() {
   const renderer = createRenderer();
 
   // Create a cube with MeshStandardMaterial
-  const geometry = new RoundedBoxGeometry(1, 1, 1, 2, 0.1);
+  const geometry = new RoundedBoxGeometry(1, 1, 1, 2, 0.1, scene);
   const material = createCubeMaterial(params);
   const cube = new Mesh(geometry, material);
   cube.castShadow = true; // Enable casting shadows
