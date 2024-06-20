@@ -14,6 +14,7 @@ import { setupGUI, loadConfig, GUIParams } from "./gui";
 import { MyRoundedBoxGeometry } from "./test/MyRoundedBox";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader'
+import { CustomDepthShaderMaterial, CustomShaderMaterial } from "./test/MyStandardMaterial";
 
 export const _gltfLoader = new GLTFLoader();
 export const _fbxLoader = new FBXLoader();
@@ -22,6 +23,7 @@ const loader = {
   glb: _gltfLoader,
   fbx: _fbxLoader,
 };
+
 
 export const fetch = (scene: Scene, format: 'glb' | 'fbx'): Promise<void> => {
   return new Promise((resolve) => {
@@ -61,7 +63,7 @@ const createCamera = () => {
 };
 
 const createCubeMaterial = (params: GUIParams) => {
-  return new MeshStandardMaterial({
+  return new CustomShaderMaterial({
     color: params.material.color,
     metalness: params.material.metalness,
     roughness: params.material.roughness,
@@ -106,9 +108,29 @@ async function init() {
   const renderer = createRenderer();
 
   // Create a cube with MeshStandardMaterial
-  const geometry = new MyRoundedBoxGeometry(1, 1, 1, 4, 0.2, 1, 0.02, scene);
+  const geometry = new MyRoundedBoxGeometry(1, 1, 1, 4, 0.1, 1, 0.02, scene);
+  const depthShader = new CustomDepthShaderMaterial()
+
   const material = createCubeMaterial(params);
-  const cube = new Mesh(geometry, material);
+
+  const mat2 = new CustomShaderMaterial({
+    color: 0x2399aa,
+  });
+  const mat3 = new CustomShaderMaterial({
+    color: 0x22ff11,
+  });
+  const mat4 = new MeshStandardMaterial({
+    color: 0xaaffaa,
+  });
+  const mat5 = new MeshStandardMaterial({
+    color: 0xffffaa,
+  });
+  const mat6 = new MeshStandardMaterial({
+    color: 0x99ffaa,
+  });
+
+  const cube = new Mesh(geometry, [material, material, mat2, mat3, material, material]);
+  cube.customDepthMaterial = depthShader;
   cube.castShadow = true; // Enable casting shadows
   scene.add(cube);
 
@@ -135,6 +157,9 @@ async function init() {
   // Add orbit controls
   const controls = new OrbitControls(camera, renderer.domElement);
 
+  // material.uniforms.lengthX.value = 2.0;
+  // material.uniforms.lengthZ.value = .5;
+
   // Setup GUI
   setupGUI(light, material, camera, params);
 
@@ -145,11 +170,29 @@ async function init() {
     // Rotate the cube around the Y axis
     // cube.rotation.y += 0.01;
 
+    // depthShader.uniforms.lengthX.value += .001;
+    // depthShader.uniforms.lengthZ.value += .001;
+
+    // material.uniforms.lengthX.value += .001;
+    // material.uniforms.lengthZ.value += .001;
+
+    // mat2.uniforms.lengthX.value += .001;
+    // mat2.uniforms.lengthZ.value += .001;
+
+    // mat3.uniforms.lengthX.value += .001;
+    // mat3.uniforms.lengthZ.value += .001;
+
+
+
     // Update the controls
     controls.update();
 
     // Render the scene
+    light.shadow.camera.updateProjectionMatrix();
+    renderer.shadowMap.needsUpdate = true;
     renderer.render(scene, camera);
+
+    // renderer.render(scene, light.shadow.camera);
   };
 
   // Handle window resize
