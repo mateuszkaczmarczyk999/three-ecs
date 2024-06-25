@@ -1,10 +1,10 @@
-import { BufferGeometry, Camera, MeshDepthMaterial, MeshStandardMaterial, MeshStandardMaterialParameters, Object3D, Scene, ShaderLib, UniformsUtils, WebGLRenderer } from "three";
+import { BufferGeometry, Camera, MeshDepthMaterialParameters, MeshDepthMaterial, MeshStandardMaterial, MeshStandardMaterialParameters, Object3D, Scene, ShaderLib, UniformsUtils, WebGLRenderer } from "three";
 
 
 export class CustomDepthShaderMaterial extends MeshDepthMaterial {
     uniforms: any;
-    constructor() {
-        super();
+    constructor(parameters: MeshDepthMaterialParameters) {
+        super(parameters);
 
         this.uniforms = UniformsUtils.merge([
             ShaderLib.standard.uniforms,

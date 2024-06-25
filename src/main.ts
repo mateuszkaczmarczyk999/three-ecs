@@ -8,6 +8,7 @@ import {
   DirectionalLight,
   AmbientLight,
   Scene,
+  RGBADepthPacking,
 } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { setupGUI, loadConfig, GUIParams } from "./gui";
@@ -109,7 +110,9 @@ async function init() {
 
   // Create a cube with MeshStandardMaterial
   const geometry = new MyRoundedBoxGeometry(1, 1, 1, 4, 0.1, 1, 0.02, scene);
-  const depthShader = new CustomDepthShaderMaterial()
+  const depthShader = new CustomDepthShaderMaterial({
+    depthPacking: RGBADepthPacking,
+});
 
   const material = createCubeMaterial(params);
 
