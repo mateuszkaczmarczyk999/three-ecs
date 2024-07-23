@@ -52,8 +52,8 @@ class MyRoundedBoxGeometry extends BoxGeometry {
         const segmentsXZ = givenXZSegments * 2 + 1;
 
 		// ensure radius isn't bigger than shortest side
-		radiusY = Math.min( width / 2, height / 2, depth / 2, radiusY );
-        radiusXZ = Math.min( width / 2, height / 2, depth / 2, radiusXZ );
+		radiusY = Math.min( width / 2, depth / 2, radiusY );
+        radiusXZ = Math.min( height / 2, radiusXZ );
 
 		super( 1, 1, 1, segmentsY, segmentsXZ, 1 );
 
